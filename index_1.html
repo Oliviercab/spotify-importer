@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spotify Playlist Importer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root{--green:#1DB954;--gd:#17a349;--black:#0a0a0a;--s1:#141414;--s2:#1e1e1e;--s3:#2a2a2a;--bd:#333;--tx:#f0f0f0;--mu:#888;--er:#e05252;--wa:#e0a952}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--tx);min-height:100vh;padding:28px 16px 64px}
+.wrap{max-width:780px;margin:0 auto}
+header{display:flex;align-items:center;gap:14px;margin-bottom:36px}
+header svg{width:34px;height:34px;flex-shrink:0}
+h1{font-size:21px;font-weight:700}h1 span{color:var(--green)}
+.sub{font-size:13px;color:var(--mu);margin-top:2px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:22px;margin-bottom:14px;transition:border-color .2s}
+.card.active{border-color:var(--green)}.card.done{border-color:#2a4a2a;background:#111a11}.card.locked{opacity:.4;pointer-events:none}
+.ch{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cn{width:28px;height:28px;border-radius:50%;background:var(--s3);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--mu);flex-shrink:0}
+.card.active .cn{background:var(--green);border-color:var(--green);color:#000}
+.card.done .cn{background:#1a3a1a;border-color:var(--green);color:var(--green)}
+.ct{font-size:15px;font-weight:600}.cd{font-size:13px;color:var(--mu);margin-top:2px}
+input[type=text]{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;color:var(--tx);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+input:focus{border-color:var(--green)}
+label{font-size:12px;color:var(--mu);display:block;margin-bottom:5px;font-weight:500}
+.f{margin-bottom:13px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;transition:all .15s}
+.bp{background:var(--green);color:#000}.bp:hover{background:var(--gd)}.bp:disabled{background:#2a4a2a;color:#4a7a4a;cursor:not-allowed}
+.notice{background:#1a1600;border:1px solid #3a3000;border-radius:8px;padding:11px 14px;font-size:12px;color:var(--wa);line-height:1.8;margin-bottom:13px}
+.notice code{background:#2a2000;padding:1px 6px;border-radius:3px;font-size:11px;user-select:all;cursor:pointer}
+.ng{background:#0a1a0a;border-color:#1a3a1a;color:#5cb85c}
+.nb{background:#0a0a1a;border-color:#1a1a4a;color:#8888dd}
+.fz{border:2px dashed var(--bd);border-radius:10px;padding:26px;text-align:center;cursor:pointer;transition:all .2s;background:var(--s2);margin-bottom:14px}
+.fz:hover,.fz.dg{border-color:var(--green);background:#111e11}
+.fz p{font-size:13px;color:var(--mu)}.fz p strong{color:var(--tx)}
+.mt{width:100%;border-collapse:collapse;font-size:13px}
+.mt th{text-align:left;padding:7px 10px;font-size:11px;color:var(--mu);border-bottom:1px solid var(--bd);font-weight:500}
+.mt td{padding:8px 10px;border-bottom:1px solid #1a1a1a;vertical-align:middle}
+.mt tr:last-child td{border-bottom:none}
+select{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:'Inter',sans-serif;font-size:12px;outline:none;width:100%;max-width:230px}
+select:focus{border-color:var(--green)}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:#1a3a1a;color:var(--green)}
+.bw{background:#1a1400;color:var(--wa)}
+.pw{background:var(--s2);border-radius:6px;overflow:hidden;height:6px;margin:10px 0}
+.pb{height:100%;background:var(--green);border-radius:6px;transition:width .3s;width:0%}
+.log{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;font-size:12px;font-family:monospace;max-height:200px;overflow-y:auto;line-height:1.8;margin-top:12px}
+.lok{color:var(--green)}.ler{color:var(--er)}.lin{color:var(--mu)}.lwa{color:var(--wa)}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:11px}
+.sc{background:var(--s2);border-radius:8px;padding:12px;text-align:center}
+.sn{font-size:20px;font-weight:700;color:var(--green)}.sl{font-size:11px;color:var(--mu);margin-top:2px}
+.sm{font-size:12px;color:var(--mu)}.mt8{margin-top:8px}.mt14{margin-top:14px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+@media(max-width:520px){.sg{grid-template-columns:repeat(2,1fr)}.mt th:last-child,.mt td:last-child{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <svg viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+  <div><h1>Spotify Playlist <span>Importer</span></h1><div class="sub">Import direct dans Spotify — 100% navigateur</div></div>
+</header>
+
+<!-- STEP 1 -->
+<div class="card active" id="s1">
+  <div class="ch"><div class="cn">1</div><div><div class="ct">Connexion Spotify</div><div class="cd">Autorise l'accès à tes playlists</div></div></div>
+  <div class="notice">
+    <strong>Prérequis — 2 min sur developer.spotify.com/dashboard :</strong><br>
+    1. Ouvre ton app → <strong>Settings</strong><br>
+    2. Dans <strong>Redirect URIs</strong>, ajoute : <code onclick="navigator.clipboard.writeText(this.textContent)">https://oliviercab.github.io/spotify-importer/</code> (clique pour copier)<br>
+    3. Clique <strong>Save</strong> tout en bas<br>
+    4. Colle ton <strong>Client ID</strong> ci-dessous
+  </div>
+  <div class="f"><label>CLIENT ID</label>
+    <input type="text" id="cid" placeholder="f27bc36e6349430888cd5264609ccd2a" autocomplete="off" spellcheck="false"/>
+  </div>
+  <button class="btn bp" onclick="startAuth()">Se connecter à Spotify</button>
+  <div id="astat" class="mt8 sm"></div>
+</div>
+
+<!-- STEP 2 -->
+<div class="card locked" id="s2">
+  <div class="ch"><div class="cn">2</div><div><div class="ct">Charge tes 8 fichiers CSV</div><div class="cd">Clique sur la zone ou glisse tes fichiers</div></div></div>
+  <div class="fz" id="fz">
+    <div style="font-size:26px;margin-bottom:8px">📂</div>
+    <p><strong>Clique ici</strong> pour sélectionner tes CSV<br>(sélectionne les 8 en même temps avec Cmd+A)</p>
+    <input type="file" id="fi" multiple accept=".csv" style="display:none">
+  </div>
+  <div id="match-wrap" style="display:none">
+    <div class="sm" style="margin-bottom:8px">Associe chaque playlist cible à ta playlist Spotify :</div>
+    <table class="mt">
+      <thead><tr><th>Playlist cible</th><th>Playlist Spotify</th><th>Morceaux</th></tr></thead>
+      <tbody id="mtbody"></tbody>
+    </table>
+    <div class="mt14">
+      <button class="btn bp" id="cbtn" onclick="confirmMatches()" disabled>Confirmer →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="card locked" id="s3">
+  <div class="ch"><div class="cn">3</div><div><div class="ct">Import</div><div class="cd">Injection des morceaux dans Spotify</div></div></div>
+  <div id="sum" style="display:none">
+    <div class="sg" id="sgrid"></div>
+    <div class="mt14"><button class="btn bp" id="ibtn" onclick="startImport()">▶ Lancer l'import</button></div>
+  </div>
+  <div id="prog" style="display:none;margin-top:14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span class="sm" id="plbl">Préparation…</span>
+      <span class="sm" id="ppct" style="margin-left:auto">0%</span>
+    </div>
+    <div class="pw"><div class="pb" id="pbar"></div></div>
+    <div class="log" id="log"></div>
+  </div>
+  <div id="done" style="display:none;margin-top:14px">
+    <div class="notice ng">✅ Import terminé ! Ouvre Spotify pour vérifier tes playlists.</div>
+    <div id="fstats"></div>
+  </div>
+</div>
+
+</div>
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────────
+const REDIRECT = 'https://oliviercab.github.io/spotify-importer/';
+const SCOPE = 'playlist-modify-public playlist-modify-private playlist-read-private';
+const TARGETS = ['Coups de cœur','Énergie / Sport','Chill / Sunset','Focus / Travail',
+                 'Soirée / Social','Rap / Hip-Hop','Electronic / House','Découvertes'];
+const CSV_KEYS = {
+  'coups de coeur':'Coups de cœur','coeur':'Coups de cœur',
+  'energie sport':'Énergie / Sport','nergie sport':'Énergie / Sport','energie':'Énergie / Sport',
+  'chill sunset':'Chill / Sunset','chill':'Chill / Sunset',
+  'focus travail':'Focus / Travail','focus':'Focus / Travail',
+  'soiree social':'Soirée / Social','soiree':'Soirée / Social',
+  'rap hiphop':'Rap / Hip-Hop','rap hip hop':'Rap / Hip-Hop','rap':'Rap / Hip-Hop',
+  'electronic house':'Electronic / House','electronic':'Electronic / House',
+  'decouvertes':'Découvertes','d couvertes':'Découvertes',
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let token = null;
+let spotifyPlaylists = [];
+let csvData = {};       // target → [uri, …]
+let confirmed = {};     // target → {id, name, uris}
+
+// ── PKCE ──────────────────────────────────────────────────────────────────────
+function rnd(n) {
+  const a = new Uint8Array(n); crypto.getRandomValues(a);
+  return btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+async function s256(v) {
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+  return btoa(String.fromCharCode(...new Uint8Array(h))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function startAuth() {
+  const cid = document.getElementById('cid').value.trim();
+  if (cid.length < 20) { stat('Client ID invalide','er'); return; }
+  localStorage.setItem('sp_cid', cid);
+  const v = rnd(64), c = await s256(v);
+  sessionStorage.setItem('pkce_v', v);
+  const p = new URLSearchParams({
+    response_type:'code', client_id:cid, scope:SCOPE,
+    redirect_uri:REDIRECT, code_challenge_method:'S256', code_challenge:c, show_dialog:'true'
+  });
+  location.href = 'https://accounts.spotify.com/authorize?' + p;
+}
+
+async function handleCallback(code) {
+  const cid = localStorage.getItem('sp_cid');
+  const v   = sessionStorage.getItem('pkce_v');
+  if (!cid || !v) { stat('Session expirée — relance la connexion','er'); return; }
+  stat('Échange du token…','mu');
+  try {
+    const r = await fetch('https://accounts.spotify.com/api/token', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({grant_type:'authorization_code', code,
+            redirect_uri:REDIRECT, client_id:cid, code_verifier:v})
+    });
+    const d = await r.json();
+    if (!d.access_token) throw new Error(d.error_description || d.error);
+    token = d.access_token;
+    sessionStorage.removeItem('pkce_v');
+    stat('✓ Connecté à Spotify','ok');
+    stepDone(1); stepActive(2);
+    // Show who is logged in
+    try { const me = await api('/me'); stat('✓ Connecté : '+me.display_name+' ('+me.email+')','ok'); } catch(e) { stat('✓ Connecté (impossible de vérifier le compte)','ok'); }
+    await loadPlaylists();
+  } catch(e) { stat('Erreur token : ' + e.message, 'er'); }
+}
+
+// ── Spotify API ───────────────────────────────────────────────────────────────
+async function api(path, method='GET', body=null) {
+  const opts = { method, headers:{ Authorization:'Bearer '+token, 'Content-Type':'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('https://api.spotify.com/v1' + path, opts);
+  if (r.status === 204) return {};
+  const d = await r.json();
+  if (d.error) throw new Error(`${d.error.status}: ${d.error.message} [reason: ${d.error.reason||"none"}]`);
+  return d;
+}
+
+async function loadPlaylists() {
+  spotifyPlaylists = [];
+  let url = '/me/playlists?limit=50';
+  while (url) {
+    const d = await api(url.startsWith('/') ? url : url.replace('https://api.spotify.com/v1',''));
+    spotifyPlaylists.push(...(d.items||[]));
+    url = d.next ? d.next.replace('https://api.spotify.com/v1','') : null;
+  }
+  renderTable();
+}
+
+// ── CSV ───────────────────────────────────────────────────────────────────────
+function csvToTarget(fname) {
+  const n = fname.toLowerCase().replace(/\.csv$/i,'').replace(/[_\-]/g,' ').trim();
+  for (const [k,v] of Object.entries(CSV_KEYS)) { if (n===k || n.includes(k)) return v; }
+  return null;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
+  const ui = headers.findIndex(h => h.includes('uri'));
+  if (ui < 0) return [];
+  return lines.slice(1).map(line => {
+    const cols = []; let cur = '', q = false;
+    for (const c of line) {
+      if (c==='"') q=!q;
+      else if (c===',' && !q) { cols.push(cur.trim()); cur=''; }
+      else cur+=c;
+    }
+    cols.push(cur.trim());
+    return cols[ui]||'';
+  }).filter(u => u.startsWith('spotify:track:'));
+}
+
+function handleFiles(files) {
+  let loaded = 0;
+  for (const f of Array.from(files)) {
+    const target = csvToTarget(f.name);
+    if (!target) { addLog('lwa','⚠ Non reconnu : '+f.name); continue; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const uris = parseCSV(e.target.result);
+      csvData[target] = uris;
+      loaded++;
+      addLog('lok', `✓ ${f.name} → ${target} (${uris.length} morceaux)`);
+      renderTable();
+    };
+    reader.readAsText(f, 'utf-8');
+  }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+function normName(s) {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
+          .replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+}
+function autoMatch(target) {
+  const nt = normName(target);
+  let best=null, bs=0;
+  for (const p of spotifyPlaylists) {
+    const np = normName(p.name);
+    if (np===nt) return p;
+    const score = nt.split(' ').filter(w=>w.length>2&&np.includes(w)).length;
+    if (score>bs) { bs=score; best=p; }
+  }
+  return bs>0 ? best : null;
+}
+
+function renderTable() {
+  if (!spotifyPlaylists.length && !Object.keys(csvData).length) return;
+  document.getElementById('match-wrap').style.display = 'block';
+  const tbody = document.getElementById('mtbody');
+  tbody.innerHTML = '';
+  TARGETS.forEach((target, i) => {
+    const auto = autoMatch(target);
+    const uris = csvData[target] || [];
+    const tr = document.createElement('tr');
+    let opts = `<option value="">— Non assignée —</option>`;
+    for (const p of spotifyPlaylists) {
+      opts += `<option value="${p.id}"${auto&&p.id===auto.id?' selected':''}>${p.name}</option>`;
+    }
+    tr.innerHTML = `
+      <td><strong>${target}</strong></td>
+      <td><select id="sel${i}" onchange="updateBtn()">${opts}</select></td>
+      <td>${uris.length?`<span class="badge">${uris.length}</span>`:'<span class="bw badge">CSV manquant</span>'}</td>`;
+    tbody.appendChild(tr);
+  });
+  updateBtn();
+}
+
+function updateBtn() {
+  const ok = TARGETS.some((t,i) => {
+    const s = document.getElementById('sel'+i);
+    return s && s.value && csvData[t] && csvData[t].length>0;
+  });
+  document.getElementById('cbtn').disabled = !ok;
+}
+
+function confirmMatches() {
+  confirmed = {};
+  TARGETS.forEach((t,i) => {
+    const s = document.getElementById('sel'+i);
+    if (s && s.value && csvData[t] && csvData[t].length>0) {
+      const pl = spotifyPlaylists.find(p=>p.id===s.value);
+      if (pl) confirmed[t] = {id:pl.id, name:pl.name, uris:csvData[t]};
+    }
+  });
+  if (!Object.keys(confirmed).length) return;
+  stepDone(2); stepActive(3);
+  const total = Object.values(confirmed).reduce((s,v)=>s+v.uris.length,0);
+  document.getElementById('sum').style.display = 'block';
+  document.getElementById('sgrid').innerHTML = [
+    [Object.keys(confirmed).length,'Playlists'],
+    [total.toLocaleString('fr'),'Morceaux'],
+    [Math.ceil(total/100),'Requêtes API'],
+    ['~'+Math.ceil(total*0.08)+'s','Durée estimée']
+  ].map(([n,l])=>`<div class="sc"><div class="sn">${n}</div><div class="sl">${l}</div></div>`).join('');
+}
+
+// ── Import ────────────────────────────────────────────────────────────────────
+async function startImport() {
+  document.getElementById('ibtn').disabled = true;
+  document.getElementById('prog').style.display = 'block';
+  const pairs = Object.entries(confirmed);
+  const total = pairs.reduce((s,[,v])=>s+v.uris.length,0);
+  let done=0, added=0, errors=0;
+
+  for (const [target, {id, name, uris}] of pairs) {
+    addLog('lin', `━━ ${target} (${uris.length} morceaux)`);
+    const chunks = [];
+    for (let i=0;i<uris.length;i+=100) chunks.push(uris.slice(i,i+100));
+    for (let ci=0;ci<chunks.length;ci++) {
+      try {
+        await api(`/playlists/${id}/tracks`, 'POST', {uris:chunks[ci]});
+        added += chunks[ci].length;
+        addLog('lok', `  ✓ Lot ${ci+1}/${chunks.length} — ${chunks[ci].length} titres`);
+      } catch(e) {
+        errors += chunks[ci].length;
+        addLog('ler', `  ✗ DÉTAIL: ${e.message}`);
+        if (e.message.startsWith('401')) { addLog('ler','Token expiré — recharge la page'); return; }
+      }
+      done += chunks[ci].length;
+      const pct = Math.round(done/total*100);
+      document.getElementById('pbar').style.width = pct+'%';
+      document.getElementById('ppct').textContent = pct+'%';
+      document.getElementById('plbl').textContent = target+'…';
+      await new Promise(r=>setTimeout(r,80));
+    }
+  }
+
+  document.getElementById('plbl').textContent = 'Terminé ✓';
+  document.getElementById('done').style.display = 'block';
+  document.getElementById('fstats').innerHTML = `
+    <div class="sg" style="margin-top:11px">
+      <div class="sc"><div class="sn" style="color:var(--green)">${added.toLocaleString('fr')}</div><div class="sl">Morceaux ajoutés</div></div>
+      <div class="sc"><div class="sn" style="color:var(--er)">${errors}</div><div class="sl">Erreurs</div></div>
+    </div>`;
+  stepDone(3);
+}
+
+// ── Log ───────────────────────────────────────────────────────────────────────
+function addLog(cls, msg) {
+  const el = document.getElementById('log');
+  const d = document.createElement('div');
+  d.className = cls; d.textContent = msg;
+  el.appendChild(d); el.scrollTop = el.scrollHeight;
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function stat(msg, type) {
+  const colors = {ok:'var(--green)',er:'var(--er)',mu:'var(--mu)'};
+  document.getElementById('astat').innerHTML = `<span style="color:${colors[type]||colors.mu}">${msg}</span>`;
+}
+function stepDone(n) {
+  const e=document.getElementById('s'+n);
+  e.classList.remove('active'); e.classList.add('done');
+  e.querySelector('.cn').textContent='✓';
+}
+function stepActive(n) {
+  const e=document.getElementById('s'+n);
+  e.classList.remove('locked'); e.classList.add('active');
+}
+
+// ── File zone setup ───────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Restore client ID
+  const saved = localStorage.getItem('sp_cid');
+  if (saved) document.getElementById('cid').value = saved;
+
+  // File input click
+  const fz = document.getElementById('fz');
+  const fi = document.getElementById('fi');
+  fz.addEventListener('click', () => fi.click());
+  fi.addEventListener('change', () => handleFiles(fi.files));
+
+  // Drag & drop
+  fz.addEventListener('dragover', e => { e.preventDefault(); fz.classList.add('dg'); });
+  fz.addEventListener('dragleave', () => fz.classList.remove('dg'));
+  fz.addEventListener('drop', e => {
+    e.preventDefault(); fz.classList.remove('dg');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  // Handle OAuth callback
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  const err  = params.get('error');
+  history.replaceState(null, '', location.pathname);
+  if (err) { stat('Connexion annulée : '+err, 'er'); }
+  else if (code) { handleCallback(code); }
+});
+</script>
+</body>
+</html>
